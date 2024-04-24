@@ -2,6 +2,9 @@
 #include "Walnut/EntryPoint.h"
 
 #include "Walnut/Image.h"
+#include "Walnut/Timer.h"
+
+#include "Renderer.h"
 
 using namespace Walnut;
 
@@ -15,40 +18,37 @@ public:
 		{
 			Render();
 		}
+		ImGui::Text("Last Render Time: %.2f ms", lastRenderTime);
 		ImGui::End();
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGui::Begin("Viewport");
 		viewPortWidth = ImGui::GetContentRegionAvail().x;
 		viewPortHeight = ImGui::GetContentRegionAvail().y;
 
+		auto image = renderer.GetFinalImage();
+
 		if(image)
-			ImGui::Image(image->GetDescriptorSet(), {(float)image->GetWidth(),(float)image->GetHeight()});
+			ImGui::Image(image->GetDescriptorSet(), {(float)image->GetWidth(),(float)image->GetHeight()}, ImVec2(0,1),ImVec2(1,0));
 
 		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 
 	void Render()
 	{
-		if (!image || viewPortWidth != image->GetWidth() || viewPortHeight != image->GetHeight())
-		{
-			image = std::make_shared<Image>(viewPortWidth, viewPortHeight,ImageFormat::RGBA);
-			delete[] imageData;
-			imageData = new uint32_t[viewPortWidth * viewPortHeight];
-		}
+		Timer timer;
 
-		for (uint32_t i = 0; i < viewPortWidth * viewPortHeight; i++)
-		{
-			imageData[i] = 0xFFFFFFFF;
-		}
+		renderer.OnResize(viewPortWidth, viewPortHeight);
+		renderer.Render();
 
-		image->SetData(imageData);
+		lastRenderTime = timer.ElapsedMillis();
 	}
 
 private:
-	std::shared_ptr<Image> image;
-	uint32_t* imageData = nullptr;
-	uint32_t viewPortWidth = 0;
-	uint32_t viewPortHeight = 0;
+	Renderer renderer;
+	uint32_t viewPortWidth = 0, viewPortHeight = 0;
+	float lastRenderTime = 0.0f;
 };
 
 Walnut::Application *Walnut::CreateApplication(int argc, char **argv)
