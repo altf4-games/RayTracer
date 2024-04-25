@@ -3,13 +3,16 @@
 #include "Walnut/Image.h"
 #include <memory>
 #include <glm/glm.hpp>
+#include "Camera.h"
+#include "Ray.h"
+#include "Scene.h"
 
 class Renderer
 {
 public:
 	Renderer() = default;
 
-	void Render();
+	void Render(const Scene& scene, const Camera& camera);
 	void OnResize(uint32_t width, uint32_t height);
 	std::shared_ptr<Walnut::Image> GetFinalImage() const { return image; }
 
@@ -18,7 +21,7 @@ public:
 	uint32_t GetHeight() const { return m_Height; }
 
 private:
-	glm::vec4 PerPixel(glm::vec2 coord);
+	glm::vec4 TraceRay(const Scene& scene, const Ray& ray);
 
 	std::shared_ptr<Walnut::Image> image;
 	uint32_t* imageData = nullptr;
