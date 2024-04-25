@@ -16,7 +16,22 @@ public:
 	ExampleLayer()
 		: camera(45.0f, 0.1f, 100.0f) 
 	{
-		{ scene.Spheres.push_back(Sphere{ {0.0f,0.0f,0.0f},0.5f,{1.0f,1.0f,1.0f} }); }
+		scene.Materials.push_back(Material{ {0.5f,0.5f,0.5f},1.0f });
+		scene.Materials.push_back(Material{ {0.0f,0.0f,0.0f},0.2f});
+		{ 
+			Sphere sphere;
+			sphere.position = { 0.0f,-0.100f,3.500f };
+			sphere.radius = 0.5f;
+			sphere.materialIndex = 0;
+			scene.Spheres.push_back(sphere);
+		}
+		{
+			Sphere sphere;
+			sphere.position = { 0.0f,-100.480f,0.0f };
+			sphere.radius = 100.0f;
+			sphere.materialIndex = 1;
+			scene.Spheres.push_back(sphere);
+		}
 	}
 
 	virtual void OnUpdate(float ts) override
@@ -27,17 +42,12 @@ public:
 	virtual void OnUIRender() override
 	{
 		ImGui::Begin("Settings");
-		
-		if (ImGui::Button("Render"))
-		{
-			Render();
-		}
 		ImGui::Text("Last Render Time: %.2f ms", lastRenderTime);
 		ImGui::End();
 
 		ImGui::Begin("Scene");
 		if (ImGui::Button("Add Sphere")) {
-			scene.Spheres.push_back(Sphere{ {0.0f,0.0f,0.0f},0.5f,{1.0f,1.0f,1.0f} });
+			scene.Spheres.push_back(Sphere{ {0.0f,0.0f,0.0f},0.5f,0});
 		}
 		for (int i = 0; i < scene.Spheres.size(); i++)
 		{
@@ -45,12 +55,25 @@ public:
 			ImGui::Text("Sphere %d", i);
 			ImGui::DragFloat3("Position", &scene.Spheres[i].position.x, 0.1f);
 			ImGui::DragFloat("Radius", &scene.Spheres[i].radius, 0.1f);
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(scene.Spheres[i].albedo));
+			ImGui::DragInt("Material Index", &scene.Spheres[i].materialIndex, 1, 0, scene.Materials.size() - 1);
+			ImGui::Separator();
 			ImGui::PopID();
 		}	
+		if (ImGui::Button("Add Material")) {
+			scene.Materials.push_back(Material{ {0.5f,0.5f,0.5f},0.0f });
+		}
+
+		for (int i = 0; i < scene.Materials.size(); i++)
+		{
+			ImGui::PushID(i);
+			ImGui::Text("Material %d", i);
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(scene.Materials[i].albedo));
+			ImGui::DragFloat("Roughness", &scene.Materials[i].Roughness, 0.05f, 0.0f, 1.0f);
+			ImGui::Separator();
+			ImGui::PopID();
+		}
 
 		ImGui::End();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGui::Begin("Viewport");
 		viewPortWidth = ImGui::GetContentRegionAvail().x;

@@ -17,14 +17,26 @@ public:
 	std::shared_ptr<Walnut::Image> GetFinalImage() const { return image; }
 
 	uint32_t* GetImageData() const { return imageData; }
-	uint32_t GetWidth() const { return m_Width; }
-	uint32_t GetHeight() const { return m_Height; }
+	uint32_t GetWidth() const { return width; }
+	uint32_t GetHeight() const { return height; }
 
 private:
-	glm::vec4 TraceRay(const Scene& scene, const Ray& ray);
+	struct Hit {
+		float hitDistance;
+		glm::vec3 worldNormal;
+		glm::vec3 worldPosition;
+		int objectIndex;
+	};
+
+	glm::vec4 PerPixel(uint32_t x, uint32_t y);
+	Hit TraceRay(const Ray& ray);
+	Hit ClosestHit(const Ray& ray, float hitDistance ,int objectIndex);
+	Hit Miss(const Ray& ray);
 
 	std::shared_ptr<Walnut::Image> image;
 	uint32_t* imageData = nullptr;
-	uint32_t m_Width, m_Height;
+	uint32_t width, height;
+	const Scene* activeScene = nullptr;
+	const Camera* activeCamera = nullptr;
 
 };
